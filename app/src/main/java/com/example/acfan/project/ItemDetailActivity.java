@@ -31,4 +31,8 @@ public class ItemDetailActivity extends AppCompatActivity{
     public void count(View v){
         itemDetailFragment.count(v);
     }
+
+    public void addtocart(View view) {
+        itemDetailFragment.addtocart(view);
+    }
 }
