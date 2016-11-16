@@ -51,4 +51,8 @@ public class ItemDetailFragment extends Fragment {
         amount.setText(""+count);
     }
 
+    public void addtocart(View v){
+
+    }
+
 }
