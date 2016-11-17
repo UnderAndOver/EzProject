@@ -1,5 +1,6 @@
 package com.example.acfan.project;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -36,6 +37,13 @@ public class Cart {
             sum+=helper.getPrice()*Item_Quantity.get(helper);
         }
         price =sum;
+    }
+
+    public ArrayList<Item> getItems(){
+        ArrayList<Item> itemlist=new ArrayList<>();
+        for(Item helper: Item_Quantity.keySet())
+            itemlist.add(helper);
+        return itemlist;
     }
 
     public void clear(){
