@@ -14,7 +14,7 @@ import android.widget.TextView;
  */
 
 public class ItemDetailFragment extends Fragment {
-    private int count;
+    private int count=1;
     TextView amount;
     public static final String ITEM_AMOUNT_EXTRA="com.example.acfan.project.Item Amount";
     Intent intent;
@@ -42,12 +42,14 @@ public class ItemDetailFragment extends Fragment {
         count=Integer.parseInt(amount.getText().toString());
         switch (v.getId()) {
             case (R.id.plus):
-                if(count<5)
+                if(count<20)
                 count++;
                 break;
             case (R.id.minus):
-                if(count>0)
+                if(count>1)
                 count--;
+                break;
+            default:
                 break;
         }
         amount.setText(""+count);

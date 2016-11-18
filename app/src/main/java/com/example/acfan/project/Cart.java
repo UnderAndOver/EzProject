@@ -16,7 +16,7 @@ public class Cart {
         this.price =0;
     }
     public void addItem(int quantity,Item item){
-        if(this.Item_Quantity.containsKey(item)){
+        if(!this.Item_Quantity.containsKey(item)){
             this.Item_Quantity.put(item,quantity);
         }
     }
@@ -30,13 +30,18 @@ public class Cart {
             this.Item_Quantity.put(item,quantity);
     }
 
-    public void getTotal(){
+    public float getTotal(){
         float sum=0;
         if(!Item_Quantity.isEmpty())
         for(Item helper:Item_Quantity.keySet()){
             sum+=helper.getPrice()*Item_Quantity.get(helper);
         }
         price =sum;
+        return price;
+    }
+
+    public int getQuantity(Item item){
+        return Item_Quantity.get(item);
     }
 
     public ArrayList<Item> getItems(){
