@@ -14,10 +14,12 @@ import android.widget.TextView;
  */
 
 public class ItemDetailFragment extends Fragment {
+    public static final String ITEM_CART ="com.example.acfan.project.Item Cart";
     private int count=1;
     TextView amount;
     public static final String ITEM_AMOUNT_EXTRA="com.example.acfan.project.Item Amount";
     Intent intent;
+    Item item;
     public ItemDetailFragment(){
 
     }
@@ -31,10 +33,11 @@ public class ItemDetailFragment extends Fragment {
         ImageView picture=(ImageView)fragmentLayout.findViewById(R.id.Item_Image);
         amount = (TextView)fragmentLayout.findViewById(R.id.counter);
         intent=getActivity().getIntent();
-        name.setText(intent.getExtras().getString(MainActivity.ITEM_NAME_EXTRA));
-        description.setText(intent.getExtras().getString(MainActivity.ITEM_DESCRIPTION_EXTRA));
-        price.setText(intent.getExtras().getString(MainActivity.ITEM_PRICE_EXTRA));
-        picture.setImageResource(intent.getExtras().getInt(MainActivity.ITEM_PICTURE_EXTRA));
+        item = (intent.getExtras().getParcelable(Item_Frag.ITEM_DETAIL));
+        name.setText(item.getName());
+        description.setText(item.getDescription());
+        price.setText(new StringBuilder().append("$").append(item.getPrice()).toString());
+        picture.setImageResource(item.getImage());
         return fragmentLayout;
     }
 
@@ -56,9 +59,9 @@ public class ItemDetailFragment extends Fragment {
     }
 
     public void addtocart(View v){
-        Intent cartintent = new Intent(getActivity(),CartActivity.class);
-        cartintent.putExtras(intent.getExtras());
+        Intent cartintent= new Intent(getActivity(),MainActivity.class);
         cartintent.putExtra(ITEM_AMOUNT_EXTRA,count);
+        cartintent.putExtra(ITEM_CART,item);
         startActivity(cartintent);
 
     }

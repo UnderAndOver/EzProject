@@ -14,10 +14,17 @@ import java.util.ArrayList;
  * A simple {@link Fragment} subclass.
  */
 public class Item_Frag extends android.app.ListFragment{
+    public static final String ITEM_DETAIL = "com.example.acfan.project.Item Detail";
+    public static final String CART_KEY ="com.example.acfan.project.Cart Key";
     private ArrayList<Item> list;
     private ItemAdapter itemAdapter;
+    private Item Itemchosen;
+    private int itemamountchosen;
+    private Intent cartintent;
+    public Cart cart;
+
     @Override
-    public void onActivityCreated (Bundle savedInstanceState){
+    public void onActivityCreated (Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         list = new ArrayList<>();
         String[] names = {"Hamburger", "Shakshuka", "Falafel", "Shawarma"};
@@ -31,11 +38,28 @@ public class Item_Frag extends android.app.ListFragment{
         for (int i = 0; i < 4; i++) {
             list.add(new Item(names[i], images[i], descriptions[i], prices[i]));
         }
-        itemAdapter=new ItemAdapter(getActivity(),list);
+        itemAdapter = new ItemAdapter(getActivity(), list);
         setListAdapter(itemAdapter);
+        if(savedInstanceState!=null)
+            cart=savedInstanceState.getParcelable(CART_KEY);
+        if (getActivity().getIntent().getExtras() != null) {
+            cartintent = getActivity().getIntent();
+            Itemchosen = (Item) cartintent.getExtras().get(ItemDetailFragment.ITEM_CART);
+            itemamountchosen = (Integer) cartintent.getExtras().get(ItemDetailFragment.ITEM_AMOUNT_EXTRA);
+            cart.addItem(itemamountchosen,Itemchosen);
+        }
+        else{
+            cart=new Cart();
+        }
     }
 
-   @Override
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(CART_KEY,cart);
+    }
+
+    @Override
     public void onListItemClick(ListView l, View v, int position, long id){
         super.onListItemClick(l,v,position,id);
         launchItemDetailActivity(position);
@@ -44,11 +68,7 @@ public class Item_Frag extends android.app.ListFragment{
     private void launchItemDetailActivity(int position){
         Item item = (Item)getListAdapter().getItem(position);
         Intent intent=new Intent(getActivity(),ItemDetailActivity.class);
-        intent.putExtra(MainActivity.ITEM_NAME_EXTRA,item.getName());
-        intent.putExtra(MainActivity.ITEM_ID_EXTRA,item.getId());
-        intent.putExtra(MainActivity.ITEM_DESCRIPTION_EXTRA,item.getDescription());
-        intent.putExtra(MainActivity.ITEM_PICTURE_EXTRA,item.getImage());
-        intent.putExtra(MainActivity.ITEM_PRICE_EXTRA,"$"+item.getPrice());
+        intent.putExtra(ITEM_DETAIL,item);
         startActivity(intent);
     }
 }

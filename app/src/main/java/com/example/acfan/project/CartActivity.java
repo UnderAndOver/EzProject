@@ -28,13 +28,5 @@ public class CartActivity extends AppCompatActivity {
 
 
     private void additem() {
-        String itemname= intent.getExtras().getString(MainActivity.ITEM_NAME_EXTRA);
-        String itempricestring= (intent.getExtras().getString(MainActivity.ITEM_PRICE_EXTRA));
-        float itemprice = Float.parseFloat(itempricestring.substring(1,itempricestring.length()-1));
-        int itempicture= intent.getExtras().getInt(MainActivity.ITEM_PICTURE_EXTRA);
-        int itemamount= (intent.getExtras().getInt(ItemDetailFragment.ITEM_AMOUNT_EXTRA));
-        String itemdescription = intent.getExtras().getString(MainActivity.ITEM_DESCRIPTION_EXTRA);
-        Item item = new Item(itemname,itempicture,itemdescription,itemprice);
-        cart.addItem(itemamount,item);
     }
 }
