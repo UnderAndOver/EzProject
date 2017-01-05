@@ -19,6 +19,10 @@ public class CartItemAdapter extends ArrayAdapter<Item> {
         helper=cart;
     }
 
+    public void updateCartItems(Item item){
+        helper.removeItem(item);
+    }
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         Item item = getItem(position);

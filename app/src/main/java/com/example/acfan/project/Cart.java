@@ -49,6 +49,9 @@ public class Cart implements Parcelable {
         if (!this.Item_Quantity.containsKey(item)) {
             this.Item_Quantity.put(item, quantity);
         }
+        else{
+            updateTotal(item,quantity);
+        }
     }
 
     public void removeItem(Item item) {

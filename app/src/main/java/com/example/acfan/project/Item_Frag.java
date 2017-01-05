@@ -21,8 +21,6 @@ public class Item_Frag extends android.app.ListFragment{
     private Item Itemchosen;
     private int itemamountchosen;
     private Intent cartintent;
-    public Cart cart;
-
     @Override
     public void onActivityCreated (Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -35,29 +33,13 @@ public class Item_Frag extends android.app.ListFragment{
                 "Falafel is a deep-fried ball or patty made from ground chickpeas, fava beans, or both. Falafel is a traditional Middle Eastern food, commonly served in a pita, which acts as a pocket",
                 "Shawarma or Shawurma is an Arab and Israeli meat preparation, where lamb, chicken, turkey, beef, veal, buffalo meat, or mixed meats are placed on a spit, and may be grilled for as long as a day."};
         float[] prices = {20, 15, 13, 17};
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < names.length; i++) {
             list.add(new Item(names[i], images[i], descriptions[i], prices[i]));
         }
         itemAdapter = new ItemAdapter(getActivity(), list);
         setListAdapter(itemAdapter);
-        if(savedInstanceState!=null)
-            cart=savedInstanceState.getParcelable(CART_KEY);
-        if (getActivity().getIntent().getExtras() != null) {
-            cartintent = getActivity().getIntent();
-            Itemchosen = (Item) cartintent.getExtras().get(ItemDetailFragment.ITEM_CART);
-            itemamountchosen = (Integer) cartintent.getExtras().get(ItemDetailFragment.ITEM_AMOUNT_EXTRA);
-            cart.addItem(itemamountchosen,Itemchosen);
-        }
-        else{
-            cart=new Cart();
-        }
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putParcelable(CART_KEY,cart);
-    }
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id){
@@ -68,7 +50,7 @@ public class Item_Frag extends android.app.ListFragment{
     private void launchItemDetailActivity(int position){
         Item item = (Item)getListAdapter().getItem(position);
         Intent intent=new Intent(getActivity(),ItemDetailActivity.class);
-        intent.putExtra(ITEM_DETAIL,item);
+        intent.putExtra("Item",item);
         startActivity(intent);
     }
 }
