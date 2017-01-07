@@ -19,6 +19,11 @@ public class CartItemAdapter extends ArrayAdapter<Item> {
         helper=cart;
     }
 
+    public void updateCartItems(Cart cart){
+        this.helper=cart;
+        notifyDataSetChanged();
+    }
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         Item item = getItem(position);
@@ -31,7 +36,7 @@ public class CartItemAdapter extends ArrayAdapter<Item> {
         itemname.setText(item.getName());
         itemprice.setText(String.format("$%s", item.getPrice()));
         itempicutre.setImageResource(item.getImage());
-        itemquantity.setText(""+helper.getQuantity(getItem(position)));
+        itemquantity.setText(""+helper.getQuantity(item));
         return convertView;
     }
 }

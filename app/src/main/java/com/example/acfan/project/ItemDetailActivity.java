@@ -2,6 +2,7 @@ package com.example.acfan.project;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -32,7 +33,10 @@ public class ItemDetailActivity extends AppCompatActivity{
         itemDetailFragment.count(v);
     }
 
-    public void addtocart(View view) {
-        itemDetailFragment.addtocart(view);
+    @Override
+    public void onBackPressed(){
+        super.onBackPressed();
+        startActivity(new Intent(this,MainActivity.class));
+        finish();
     }
 }
