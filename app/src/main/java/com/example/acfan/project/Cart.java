@@ -75,7 +75,9 @@ public class Cart implements Parcelable {
     }
 
     public int getQuantity(Item item) {
+        if (this.Item_Quantity.containsKey(item))
         return Item_Quantity.get(item);
+        return 0;
     }
 
     public ArrayList<Item> getItems() {
