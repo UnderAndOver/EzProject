@@ -8,9 +8,20 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Toast;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
     public static final String DEFAULT="N/A";
+    public String url_token_login= "192.168.2.106:5000/tokenlogin"; //check token login
     Item_Frag item_frag;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +47,10 @@ public class MainActivity extends AppCompatActivity {
         if(token.equals(DEFAULT)){ // NEED TO CHECK IF TOKEN IS VALID
             return false;
         }
+        else if(Token_Verify().isEmpty()){
+            return false;
+
+        }
         else
         {
             return true;
@@ -51,5 +66,39 @@ public class MainActivity extends AppCompatActivity {
     public void OpenCart(View view) {
         Intent callCart = new Intent(this,CartActivity.class);
         startActivity(callCart);
+    }
+
+    public String Token_Verify(){
+        RequestQueue queue = VolleySingleton.getInstance().getRequestQueue();
+        JSONObject userInfo = new JSONObject();
+        SharedPreferences sharedPreferences=getSharedPreferences("Token", Context.MODE_PRIVATE);
+        String token = sharedPreferences.getString("token",DEFAULT);
+        try {
+            userInfo.put("token",token);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,url_token_login,userInfo,
+
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+                    }
+                },
+                new Response.ErrorListener(){
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        SharedPreferences sharedPreferences = getSharedPreferences("Token", Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("token", "");
+                        editor.commit();
+                        Toast.makeText(getApplicationContext(),"Something went wrong",Toast.LENGTH_SHORT).show();
+                    }
+                });
+        queue.add(jsonObjectRequest);
+        token=sharedPreferences.getString("token",DEFAULT);
+        return token;
     }
 }

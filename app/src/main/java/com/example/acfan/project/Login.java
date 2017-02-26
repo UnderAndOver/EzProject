@@ -5,7 +5,9 @@ package com.example.acfan.project;
  */
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -15,7 +17,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -86,6 +92,31 @@ public class Login extends AppCompatActivity {
         JSONObject userInfo = new JSONObject();
         userInfo.put("email",email);
         userInfo.put("password",password);
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,url_login,userInfo,
+
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        SharedPreferences sharedPreferences=getSharedPreferences("Token", Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        JSONObject jsonresponse = response;
+                        try {//setting token value to server token received
+                            editor.putString("token",jsonresponse.getString("token"));
+                            editor.commit();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                },
+                new Response.ErrorListener(){
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(getApplicationContext(),"Something went wrong",Toast.LENGTH_SHORT).show();
+                    }
+                });
+        queue.add(jsonObjectRequest);
         new android.os.Handler().postDelayed(
                 new Runnable() {
                     public void run() {

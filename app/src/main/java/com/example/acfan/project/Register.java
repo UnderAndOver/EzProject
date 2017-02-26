@@ -99,6 +99,7 @@ public class Register extends AppCompatActivity {
                         JSONObject jsonresponse = response;
                         try {//setting token value to server token received
                             editor.putString("token",jsonresponse.getString("token"));
+                            editor.commit();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -112,6 +113,7 @@ public class Register extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(),"Something went wrong",Toast.LENGTH_SHORT).show();
                         }
                     });
+        queue.add(jsonObjectRequest);
         new android.os.Handler().postDelayed(
                 new Runnable() {
                     public void run() {
