@@ -26,13 +26,15 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
 public class Login extends AppCompatActivity {
     private static final String TAG = "Login";
     private static final int REQUEST_SIGNUP = 0;
-    private String url_login = "192.168.2.106:5000/login"; //localhost:5000/login to login
+    private String url_login = "http://192.168.2.107:5000/login"; //localhost:5000/login to login
 
     @InjectView(R.id.input_email) EditText _emailText;
     @InjectView(R.id.input_password) EditText _passwordText;
@@ -89,10 +91,10 @@ public class Login extends AppCompatActivity {
 
         // TODO: Implement your own authentication logic here.
         RequestQueue queue = VolleySingleton.getInstance().getRequestQueue();
-        JSONObject userInfo = new JSONObject();
-        userInfo.put("email",email);
-        userInfo.put("password",password);
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,url_login,userInfo,
+        HashMap<String,String> params = new HashMap<>();
+        params.put("email",email);
+        params.put("password",password);
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,url_login,new JSONObject(params),
 
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -115,7 +117,12 @@ public class Login extends AppCompatActivity {
                     public void onErrorResponse(VolleyError error) {
                         Toast.makeText(getApplicationContext(),"Something went wrong",Toast.LENGTH_SHORT).show();
                     }
-                });
+                }){
+            @Override
+            public String getBodyContentType() {
+                return "application/json; charset=utf-8";
+            }
+        };
         queue.add(jsonObjectRequest);
         new android.os.Handler().postDelayed(
                 new Runnable() {

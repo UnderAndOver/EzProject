@@ -10,18 +10,21 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 
-import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     public static final String DEFAULT="N/A";
-    public String url_token_login= "192.168.2.106:5000/tokenlogin"; //check token login
+    public String url_token_login= "http://192.168.2.107:5000/tokenlogin"; //check token login
     Item_Frag item_frag;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
         if(!isUserSignedIn()){
             finish();
             startLoginActivity();
-            return;
         }
 
         setContentView(R.layout.activity_main);
@@ -47,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         if(token.equals(DEFAULT)){ // NEED TO CHECK IF TOKEN IS VALID
             return false;
         }
-        else if(Token_Verify().isEmpty()){
+        else if(Token_Verify().isEmpty()|| Token_Verify()==null){
             return false;
 
         }
@@ -70,15 +72,9 @@ public class MainActivity extends AppCompatActivity {
 
     public String Token_Verify(){
         RequestQueue queue = VolleySingleton.getInstance().getRequestQueue();
-        JSONObject userInfo = new JSONObject();
         SharedPreferences sharedPreferences=getSharedPreferences("Token", Context.MODE_PRIVATE);
         String token = sharedPreferences.getString("token",DEFAULT);
-        try {
-            userInfo.put("token",token);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,url_token_login,userInfo,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,url_token_login,null,
 
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -86,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 },
-                new Response.ErrorListener(){
+                new Response.ErrorListener() {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
@@ -94,9 +90,19 @@ public class MainActivity extends AppCompatActivity {
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putString("token", "");
                         editor.commit();
-                        Toast.makeText(getApplicationContext(),"Something went wrong",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Something went wrong", Toast.LENGTH_SHORT).show();
                     }
-                });
+                }) {
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                SharedPreferences sharedPreferences = getSharedPreferences("Token", Context.MODE_PRIVATE);
+                String token = sharedPreferences.getString("token", DEFAULT);
+                HashMap<String, String> headers = new HashMap<>();
+                headers.put("Authorization", "Bearer "+token);
+                return headers;
+            }
+        };
         queue.add(jsonObjectRequest);
         token=sharedPreferences.getString("token",DEFAULT);
         return token;

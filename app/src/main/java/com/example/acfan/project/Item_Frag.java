@@ -1,25 +1,31 @@
 package com.example.acfan.project;
 
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.example.acfan.project.MainActivity.DEFAULT;
 
@@ -32,31 +38,82 @@ public class Item_Frag extends android.app.ListFragment{
     public static final String CART_KEY ="com.example.acfan.project.Cart Key";
     private ArrayList<Item> list;
     private ItemAdapter itemAdapter;
-    private Item Itemchosen;
-    private int itemamountchosen;
+    private ProgressDialog pDialog;
     private Intent cartintent;
-    private String url_items= "192.168.2.106:5000/items"; //get item_list
+    private String url_items= "http://192.168.2.107:5000/items"; //get item_list
     @Override
     public void onActivityCreated (Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Request_Item_List();
-        /*list = new ArrayList<>();
-        String[] names = {"Hamburger", "Shakshuka", "Falafel", "Shawarma"};
-        int[] images = {R.drawable.food1, R.drawable.food2, R.drawable.food3, R.drawable.food4};
-        String[] descriptions = {
-                "A hamburger is a sandwich consisting of one or more cooked patties of ground meat, usually beef, placed inside a sliced bread roll or bun. Hamburgers may be cooked in a variety of ways, including pan-frying, barbecuing, and flame-broiling.",
-                "Shakshouka or shakshuka is a dish of eggs poached in a sauce of tomatoes, chili peppers, and onions, often spiced with cumin.",
-                "Falafel is a deep-fried ball or patty made from ground chickpeas, fava beans, or both. Falafel is a traditional Middle Eastern food, commonly served in a pita, which acts as a pocket",
-                "Shawarma or Shawurma is an Arab and Israeli meat preparation, where lamb, chicken, turkey, beef, veal, buffalo meat, or mixed meats are placed on a spit, and may be grilled for as long as a day."};
-        float[] prices = {20, 15, 13, 17};
-        for (int i = 0; i < names.length; i++) {
-            list.add(new Item(names[i], images[i], descriptions[i], prices[i]));
-        }
-        */
+        list=new ArrayList<>();
         itemAdapter = new ItemAdapter(getActivity(), list);
         setListAdapter(itemAdapter);
-    }
 
+        //setup itemlist from server
+        getItems();
+        Toast.makeText(getActivity(),"List size check: "+list.size(),Toast.LENGTH_SHORT).show();
+    }
+    private void getItems(){
+        //Progress bar while getting items
+        pDialog = new ProgressDialog(this.getActivity(),
+                R.style.AppTheme_Dark_Dialog);
+        pDialog.setIndeterminate(true);
+        pDialog.setMessage("Getting Items....");
+        pDialog.show();
+
+        RequestQueue queue = VolleySingleton.getInstance().getRequestQueue();
+        SharedPreferences sharedPreferences=getActivity().getSharedPreferences("Token", Context.MODE_PRIVATE);
+        String token = sharedPreferences.getString("token",DEFAULT);
+        CustomJsonArrayRequest jsonArrayRequest = new CustomJsonArrayRequest(Request.Method.GET,url_items,null,
+
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        Log.d("onResponse",response.toString());
+                        hidePDialog();
+                        // json parse
+                        for(int i=0; i<response.length();i++){
+                            try{
+                                JSONObject obj=response.getJSONObject(i);
+                                String name = obj.getString("name");
+                                String description=obj.getString("description");
+                                int image = R.drawable.food1; //placeholder until loader
+                                Float price =(float)obj.getDouble("price");
+                                Item item = new Item(name,image,description,price);
+                                list.add(item);
+                            }catch (JSONException e){
+                                e.printStackTrace();
+                            }
+                        }
+                        itemAdapter.notifyDataSetChanged();
+                    }
+
+                },
+                new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                     /*   SharedPreferences sharedPreferences = getSharedPreferences("Token", Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("token", "");
+                        editor.commit();
+                        */
+                        VolleyLog.d("onErrorResponse","Error: "+ error.getMessage());
+                        hidePDialog();
+                        Toast.makeText(getActivity(), "Something went wrong in request_item_lst", Toast.LENGTH_SHORT).show();
+                    }
+                }) {
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                SharedPreferences sharedPreferences = getActivity().getSharedPreferences("Token", Context.MODE_PRIVATE);
+                String token = sharedPreferences.getString("token", DEFAULT);
+                HashMap<String, String> headers = new HashMap<>();
+                headers.put("Authorization", "Bearer "+token);
+                return headers;
+            }
+        };
+        queue.add(jsonArrayRequest);
+    }
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id){
@@ -71,54 +128,17 @@ public class Item_Frag extends android.app.ListFragment{
         startActivity(intent);
     }
 
-    public void Request_Item_List(){
-        RequestQueue queue = VolleySingleton.getInstance().getRequestQueue();
-        SharedPreferences sharedPreferences=getActivity().getSharedPreferences("Token", Context.MODE_PRIVATE);
-        String token = sharedPreferences.getString("token",DEFAULT);
-        JSONObject userInfo = new JSONObject();
-        try {
-            userInfo.put("token",token);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        CustomJsonArrayRequest jsonArrayRequest = new CustomJsonArrayRequest(Request.Method.GET,url_items,userInfo,
-
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        getItemList(response);
-                    }
-
-                },
-                new Response.ErrorListener(){
-
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                     /*   SharedPreferences sharedPreferences = getSharedPreferences("Token", Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString("token", "");
-                        editor.commit();
-                        */
-                        Toast.makeText(getActivity(),"Something went wrong",Toast.LENGTH_SHORT).show();
-                    }
-                });
-        queue.add(jsonArrayRequest);
-    }
-    private void getItemList(JSONArray response){ //need to add imageloader for urls
-        ArrayList items = new ArrayList<>();
-
-        for(int i=0;i<response.length();i++){
-            try {
-                JSONObject jsonItem = response.getJSONObject(i);
-
-                Item item = new Item(jsonItem.getString("name"),R.drawable.placeholder,jsonItem.getString("description"), Float.valueOf(String.valueOf(jsonItem.getDouble("price"))));
-                items.add(item);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        list=items;
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        hidePDialog();
     }
 
+    private void hidePDialog(){
+        if(pDialog!=null){
+            pDialog.dismiss();
+            pDialog=null;
+        }
+    }
 
 }

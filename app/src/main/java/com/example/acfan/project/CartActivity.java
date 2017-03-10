@@ -1,8 +1,10 @@
 package com.example.acfan.project;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -13,16 +15,30 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+
+import org.json.JSONArray;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.example.acfan.project.MainActivity.DEFAULT;
 
 public class CartActivity extends AppCompatActivity {
     private static final String TAG ="CartActivity";
+    private String url_order="http://192.168.2.107:5000/orders"; //link to get/post orders
     Cart cart;
     Intent intent;
     ListView l;
     CartItemAdapter adapter;
     TextView total;
-    Button clear;
+    Button clear,buy;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +52,7 @@ public class CartActivity extends AppCompatActivity {
         total = (TextView) findViewById(R.id.cart_item_total);
         total.setText(String.format("$%s", cart.getTotal()));
         clear =(Button) findViewById(R.id.clear);
+        buy = (Button) findViewById(R.id.send_order);
 
 
         l.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -87,6 +104,56 @@ public class CartActivity extends AppCompatActivity {
                 Toast.makeText(CartActivity.this,"amount in cart : "+cart.getItems().size(),Toast.LENGTH_LONG).show();
             }
         });
+
+        buy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v){
+                ArrayList<Item> items = cart.getItems();
+                JSONArray jsonitems = new JSONArray();
+                for(Item helper: items){
+                    jsonitems.put(helper);
+                }
+                sendordertoserver(jsonitems);
+
+            }
+        });
+    }
+
+    private void sendordertoserver(JSONArray jsonitems) {
+        RequestQueue queue = VolleySingleton.getInstance().getRequestQueue();
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.POST, url_order, jsonitems,
+
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        Toast.makeText(getApplicationContext(),"Thank you for using EZ-Meal",Toast.LENGTH_SHORT).show();
+                        onBackPressed();
+                        cart.clear();
+                    }
+                },
+                new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                     /*   SharedPreferences sharedPreferences = getSharedPreferences("Token", Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("token", "");
+                        editor.commit();
+                        */
+                        Toast.makeText(getApplicationContext(), "Something went wrong", Toast.LENGTH_SHORT).show();
+                    }
+                }) {
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                SharedPreferences sharedPreferences = getSharedPreferences("Token", Context.MODE_PRIVATE);
+                String token = sharedPreferences.getString("token", DEFAULT);
+                HashMap<String, String> headers = new HashMap<>();
+                headers.put("Authorization", "Bearer "+token);
+                return headers;
+            }
+        };
+        queue.add(jsonArrayRequest);
     }
 
     @Override

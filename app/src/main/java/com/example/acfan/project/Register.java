@@ -6,6 +6,7 @@ package com.example.acfan.project;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -25,12 +26,14 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
 public class Register extends AppCompatActivity {
     private static final String TAG = "Register";
-    String url = "192.168.2.106:5000/register"; //localhost:5000/register to signup
+    String url = "http://192.168.2.107:5000/register"; //localhost:5000/register to signup
 
     //@InjectView(R.id.input_name) EditText _nameText;
     @InjectView(R.id.input_email) EditText _emailText;
@@ -86,10 +89,10 @@ public class Register extends AppCompatActivity {
 
         // TODO: Implement your own signup logic here.
         RequestQueue queue = VolleySingleton.getInstance().getRequestQueue();
-        JSONObject userInfo = new JSONObject();
-        userInfo.put("email",email);
-        userInfo.put("password",password);
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,url,userInfo,
+        HashMap<String,String> params = new HashMap<>();
+        params.put("email",email);
+        params.put("password",password);
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,url,new JSONObject(params),
 
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -112,7 +115,12 @@ public class Register extends AppCompatActivity {
                         public void onErrorResponse(VolleyError error) {
                             Toast.makeText(getApplicationContext(),"Something went wrong",Toast.LENGTH_SHORT).show();
                         }
-                    });
+                    }){
+            @Override
+            public String getBodyContentType() {
+                return "application/json; charset=utf-8";
+            }
+        };
         queue.add(jsonObjectRequest);
         new android.os.Handler().postDelayed(
                 new Runnable() {
@@ -131,6 +139,8 @@ public class Register extends AppCompatActivity {
         //maybe force to go to MainActivity
         _signupButton.setEnabled(true);
         setResult(RESULT_OK, null);
+        Intent gotomain = new Intent(this,MainActivity.class);
+        startActivity(gotomain);
         finish();
     }
 
