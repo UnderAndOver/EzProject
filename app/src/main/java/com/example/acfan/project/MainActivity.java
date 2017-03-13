@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String DEFAULT="N/A";
     public String url_token_login= "http://192.168.2.107:5000/tokenlogin"; //check token login
     Item_Frag item_frag;
+    boolean flag=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,22 +36,25 @@ public class MainActivity extends AppCompatActivity {
             finish();
             startLoginActivity();
         }
-
-        setContentView(R.layout.activity_main);
-        item_frag=new Item_Frag();
-        FragmentManager fragmentManager=getFragmentManager();
-        FragmentTransaction fragmentTransaction=fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.activity_main,item_frag,"Frag");
-        fragmentTransaction.commit();
+        else {
+            setContentView(R.layout.activity_main);
+            item_frag = new Item_Frag();
+            FragmentManager fragmentManager = getFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.add(R.id.activity_main, item_frag, "Frag");
+            fragmentTransaction.commit();
+        }
     }
 
     private boolean isUserSignedIn() {
         SharedPreferences sharedPreferences=getSharedPreferences("Token", Context.MODE_PRIVATE);
         String token = sharedPreferences.getString("token","DEFAULT"); // checking if token
-        if(token.equals(DEFAULT)){ // NEED TO CHECK IF TOKEN IS VALID
+        if(token.isEmpty()){ // NEED TO CHECK IF TOKEN IS VALID
+            // user is new implement splash screen here
             return false;
         }
         else if(Token_Verify().isEmpty()|| Token_Verify()==null){
+            Toast.makeText(getApplicationContext(),"Sorry something went wrong, you will need to login again",Toast.LENGTH_SHORT).show();
             return false;
 
         }
@@ -103,7 +108,14 @@ public class MainActivity extends AppCompatActivity {
                 return headers;
             }
         };
-        queue.add(jsonObjectRequest);
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(20 * 1000, 0,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        if(!flag) {
+            queue.add(jsonObjectRequest);
+            flag = true;
+        }
+        else
+            flag=false;
         token=sharedPreferences.getString("token",DEFAULT);
         return token;
     }

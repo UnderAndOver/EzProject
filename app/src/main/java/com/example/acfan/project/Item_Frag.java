@@ -13,6 +13,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -52,67 +53,69 @@ public class Item_Frag extends android.app.ListFragment{
         getItems();
         Toast.makeText(getActivity(),"List size check: "+list.size(),Toast.LENGTH_SHORT).show();
     }
-    private void getItems(){
-        //Progress bar while getting items
-        pDialog = new ProgressDialog(this.getActivity(),
-                R.style.AppTheme_Dark_Dialog);
-        pDialog.setIndeterminate(true);
-        pDialog.setMessage("Getting Items....");
-        pDialog.show();
+    private void getItems() {
+            //Progress bar while getting items
+            pDialog = new ProgressDialog(this.getActivity(),
+                    R.style.AppTheme_Dark_Dialog);
+            pDialog.setIndeterminate(true);
+            pDialog.setMessage("Getting Items....");
+            pDialog.show();
 
-        RequestQueue queue = VolleySingleton.getInstance().getRequestQueue();
-        SharedPreferences sharedPreferences=getActivity().getSharedPreferences("Token", Context.MODE_PRIVATE);
-        String token = sharedPreferences.getString("token",DEFAULT);
-        CustomJsonArrayRequest jsonArrayRequest = new CustomJsonArrayRequest(Request.Method.GET,url_items,null,
+            RequestQueue queue = VolleySingleton.getInstance().getRequestQueue();
+            SharedPreferences sharedPreferences = getActivity().getSharedPreferences("Token", Context.MODE_PRIVATE);
+            String token = sharedPreferences.getString("token", DEFAULT);
+            CustomJsonArrayRequest jsonArrayRequest = new CustomJsonArrayRequest(Request.Method.GET, url_items, null,
 
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        Log.d("onResponse",response.toString());
-                        hidePDialog();
-                        // json parse
-                        for(int i=0; i<response.length();i++){
-                            try{
-                                JSONObject obj=response.getJSONObject(i);
-                                String name = obj.getString("name");
-                                String description=obj.getString("description");
-                                int image = R.drawable.food1; //placeholder until loader
-                                Float price =(float)obj.getDouble("price");
-                                Item item = new Item(name,image,description,price);
-                                list.add(item);
-                            }catch (JSONException e){
-                                e.printStackTrace();
+                    new Response.Listener<JSONArray>() {
+                        @Override
+                        public void onResponse(JSONArray response) {
+                            Log.d("onResponse", response.toString());
+                            hidePDialog();
+                            // json parse
+                            for (int i = 0; i < response.length(); i++) {
+                                try {
+                                    JSONObject obj = response.getJSONObject(i);
+                                    String name = obj.getString("name");
+                                    String description = obj.getString("description");
+                                    String imageurl = obj.getString("image");
+                                    Float price = (float) obj.getDouble("price");
+                                    String id = obj.getString("item_id");
+                                    Item item = new Item(name, imageurl, description, price,id);
+                                    list.add(item);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
                             }
+                            itemAdapter.notifyDataSetChanged();
                         }
-                        itemAdapter.notifyDataSetChanged();
-                    }
 
-                },
-                new Response.ErrorListener() {
+                    },
+                    new Response.ErrorListener() {
 
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
                      /*   SharedPreferences sharedPreferences = getSharedPreferences("Token", Context.MODE_PRIVATE);
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putString("token", "");
                         editor.commit();
                         */
-                        VolleyLog.d("onErrorResponse","Error: "+ error.getMessage());
-                        hidePDialog();
-                        Toast.makeText(getActivity(), "Something went wrong in request_item_lst", Toast.LENGTH_SHORT).show();
-                    }
-                }) {
+                            VolleyLog.d("onErrorResponse", "Error: " + error.getMessage());
+                            hidePDialog();
+                            Toast.makeText(getActivity(), "Something went wrong in request_item_lst", Toast.LENGTH_SHORT).show();
+                        }
+                    }) {
 
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                SharedPreferences sharedPreferences = getActivity().getSharedPreferences("Token", Context.MODE_PRIVATE);
-                String token = sharedPreferences.getString("token", DEFAULT);
-                HashMap<String, String> headers = new HashMap<>();
-                headers.put("Authorization", "Bearer "+token);
-                return headers;
-            }
-        };
-        queue.add(jsonArrayRequest);
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    SharedPreferences sharedPreferences = getActivity().getSharedPreferences("Token", Context.MODE_PRIVATE);
+                    String token = sharedPreferences.getString("token", DEFAULT);
+                    HashMap<String, String> headers = new HashMap<>();
+                    headers.put("Authorization", "Bearer " + token);
+                    return headers;
+                }
+            };
+            jsonArrayRequest.setRetryPolicy(new DefaultRetryPolicy(0, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+                queue.add(jsonArrayRequest);
     }
 
     @Override

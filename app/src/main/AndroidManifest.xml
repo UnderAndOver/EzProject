@@ -21,7 +21,8 @@
             android:parentActivityName=".MainActivity" />
         <activity android:name=".CartActivity"
             android:parentActivityName=".MainActivity"/>
-        <activity android:name=".Login" android:theme="@style/AppTheme.Dark" />
+        <activity android:name=".Login" android:theme="@style/AppTheme.Dark"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
         <activity android:name=".Register" android:theme="@style/AppTheme.Dark" />
     </application>
 

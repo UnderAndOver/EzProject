@@ -20,9 +20,11 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,7 +73,7 @@ public class CartActivity extends AppCompatActivity {
         l.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-                new AlertDialog.Builder(CartActivity.this)
+                new AlertDialog.Builder(CartActivity.this,android.R.style.Theme_DeviceDefault_Light_Dialog_Alert)
                         .setTitle(getResources().getString(R.string.delete_item))
                         .setMessage(getResources().getString(R.string.delete_item_message))
                         .setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
@@ -87,7 +89,7 @@ public class CartActivity extends AppCompatActivity {
                         })
                         .setNegativeButton(getResources().getString(R.string.no), null)
                         .show();
-                return false;
+                return true;
             }
 
 
@@ -100,7 +102,7 @@ public class CartActivity extends AppCompatActivity {
                 adapter.clear();
                 adapter.updateCartItems(cart);
                 adapter.notifyDataSetChanged();
-                total.setText(String.format("$%s", "0"));
+                total.setText(String.format("$%s", "0.0"));
                 Toast.makeText(CartActivity.this,"amount in cart : "+cart.getItems().size(),Toast.LENGTH_LONG).show();
             }
         });
@@ -108,27 +110,50 @@ public class CartActivity extends AppCompatActivity {
         buy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
-                ArrayList<Item> items = cart.getItems();
-                JSONArray jsonitems = new JSONArray();
-                for(Item helper: items){
-                    jsonitems.put(helper);
+                if(!cart.getItems().isEmpty()) {
+                    ArrayList<Item> items = cart.getItems();
+                    JSONArray jsonitems = new JSONArray();
+                    JSONObject order = new JSONObject();
+                    for (Item helper : items) {
+                        String id = helper.getId();
+                        int amount = cart.getQuantity(helper);
+                        JSONObject obj = new JSONObject();
+                        try {
+                            obj.put("item_id", id);
+                            obj.put("amount", amount);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        jsonitems.put(obj);
+                    }
+                    try {
+                        order.put("items", jsonitems);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    cart.clear();
+                    adapter.clear();
+                    adapter.updateCartItems(cart);
+                    adapter.notifyDataSetChanged();
+                    total.setText(String.format("$%s", "0.0"));
+                    sendordertoserver(order);
                 }
-                sendordertoserver(jsonitems);
-
+                else{
+                    Toast.makeText(getApplicationContext(),"Buy something first",Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
 
-    private void sendordertoserver(JSONArray jsonitems) {
+    private void sendordertoserver(JSONObject jsonitems) {
         RequestQueue queue = VolleySingleton.getInstance().getRequestQueue();
-        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.POST, url_order, jsonitems,
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url_order, jsonitems,
 
-                new Response.Listener<JSONArray>() {
+                new Response.Listener<JSONObject>() {
                     @Override
-                    public void onResponse(JSONArray response) {
+                    public void onResponse(JSONObject response) {
                         Toast.makeText(getApplicationContext(),"Thank you for using EZ-Meal",Toast.LENGTH_SHORT).show();
                         onBackPressed();
-                        cart.clear();
                     }
                 },
                 new Response.ErrorListener() {
@@ -153,7 +178,7 @@ public class CartActivity extends AppCompatActivity {
                 return headers;
             }
         };
-        queue.add(jsonArrayRequest);
+        queue.add(jsonObjectRequest);
     }
 
     @Override

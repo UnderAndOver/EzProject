@@ -8,8 +8,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.NetworkImageView;
 
 /**
  * Created by acfan on 10/22/2016.
@@ -23,7 +25,7 @@ public class ItemDetailFragment extends Fragment {
     Intent intent;
     Item item;
     TextView name,description,price,amount;
-    ImageView picture;
+    NetworkImageView mNetworkImageView;
     View fragmentLayout;
     Button bOrder;
     public ItemDetailFragment(){
@@ -48,7 +50,7 @@ public class ItemDetailFragment extends Fragment {
         name=(TextView) fragmentLayout.findViewById(R.id.Item_Name);
         description=(TextView)fragmentLayout.findViewById(R.id.Item_description);
         price =(TextView)fragmentLayout.findViewById(R.id.Item_Price);
-        picture=(ImageView)fragmentLayout.findViewById(R.id.Item_Image);
+        mNetworkImageView=(NetworkImageView)fragmentLayout.findViewById(R.id.Item_Image);
         amount = (TextView)fragmentLayout.findViewById(R.id.counter);
         bOrder = (Button)fragmentLayout.findViewById(R.id.bOrder);
     }
@@ -57,7 +59,11 @@ public class ItemDetailFragment extends Fragment {
         name.setText(item.getName());
         description.setText(item.getDescription());
         price.setText(new StringBuilder().append("$").append(item.getPrice()).toString());
-        picture.setImageResource(item.getImage());
+
+        ImageLoader mImageLoader = VolleySingleton.getInstance().getImageLoader();
+        mImageLoader.get(item.getImageurl(), ImageLoader.getImageListener(mNetworkImageView,R.drawable.android_placeholder_vector,R.drawable.android_error_vector));
+        mNetworkImageView.setImageUrl(item.getImageurl(),mImageLoader);
+
         if(CartHelper.getCart().getItems().contains(item))
         count = CartHelper.getCart().getQuantity(item);
         else

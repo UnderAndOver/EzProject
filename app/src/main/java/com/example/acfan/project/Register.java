@@ -33,6 +33,7 @@ import butterknife.InjectView;
 
 public class Register extends AppCompatActivity {
     private static final String TAG = "Register";
+    private static final int REQUEST_LOGIN = 0;
     String url = "http://192.168.2.107:5000/register"; //localhost:5000/register to signup
 
     //@InjectView(R.id.input_name) EditText _nameText;
@@ -62,7 +63,9 @@ public class Register extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Finish the registration screen and return to the Login activity
-                finish();
+                //finish();
+                Intent intent = new Intent(getApplicationContext(), Login.class);
+                startActivityForResult(intent, REQUEST_LOGIN);
             }
         });
     }
