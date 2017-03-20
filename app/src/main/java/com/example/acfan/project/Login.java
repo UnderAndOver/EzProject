@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -17,9 +18,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 
@@ -27,6 +30,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -35,6 +39,7 @@ public class Login extends AppCompatActivity {
     private static final String TAG = "Login";
     private static final int REQUEST_SIGNUP = 0;
     private String url_login = "http://192.168.2.107:5000/login"; //localhost:5000/login to login
+    HashMap<String,String> params;
 
     @InjectView(R.id.input_email) EditText _emailText;
     @InjectView(R.id.input_password) EditText _passwordText;
@@ -86,15 +91,12 @@ public class Login extends AppCompatActivity {
         progressDialog.setMessage("Authenticating...");
         progressDialog.show();
 
-        String email = _emailText.getText().toString();
-        String password = _passwordText.getText().toString();
+        final String email = _emailText.getText().toString();
+        final String password = _passwordText.getText().toString();
 
         // TODO: Implement your own authentication logic here.
         RequestQueue queue = VolleySingleton.getInstance().getRequestQueue();
-        HashMap<String,String> params = new HashMap<>();
-        params.put("email",email);
-        params.put("password",password);
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,url_login,new JSONObject(params),
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,url_login,null,
 
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -115,9 +117,28 @@ public class Login extends AppCompatActivity {
 
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(getApplicationContext(),"Something went wrong",Toast.LENGTH_SHORT).show();
+                        // gets here if server and internet are on
+                        String err;
+                        if (error instanceof com.android.volley.NoConnectionError) {
+                            err = "No Internet Access";
+                            Toast.makeText(getApplicationContext(), err, Toast.LENGTH_SHORT).show();
+                        }
+                        else if (error.getClass().equals(TimeoutError.class)){
+                            Toast.makeText(getApplicationContext(),"Server is unavailable",Toast.LENGTH_SHORT).show();
+                        }
+                        else {
+                            Toast.makeText(getApplicationContext(), "The email or password you entered was invalid", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<>();
+                final String input= email+":"+password;
+                final String basicAuth = "Basic " + Base64.encodeToString(input.getBytes(), Base64.NO_WRAP);
+                headers.put("Authorization", basicAuth);
+                return headers;
+            }
             @Override
             public String getBodyContentType() {
                 return "application/json; charset=utf-8";
@@ -132,7 +153,7 @@ public class Login extends AppCompatActivity {
                         // onLoginFailed();
                         progressDialog.dismiss();
                     }
-                }, 3000);
+                }, 2000);
     }
 
 
@@ -156,7 +177,8 @@ public class Login extends AppCompatActivity {
 
     public void onLoginSuccess() {
         _loginButton.setEnabled(true);
-        finish();
+        Intent intent = new Intent(this,MainActivity.class);
+        startActivity(intent);
     }
 
     public void onLoginFailed() {

@@ -20,6 +20,7 @@ import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 
@@ -104,8 +105,9 @@ public class Register extends AppCompatActivity {
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         JSONObject jsonresponse = response;
                         try {//setting token value to server token received
-                            editor.putString("token",jsonresponse.getString("token"));
-                            editor.commit();
+                            String token=jsonresponse.getString("token");
+                            editor.putString("token",token);
+                            editor.apply();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -116,7 +118,18 @@ public class Register extends AppCompatActivity {
 
                         @Override
                         public void onErrorResponse(VolleyError error) {
-                            Toast.makeText(getApplicationContext(),"Something went wrong",Toast.LENGTH_SHORT).show();
+                            // gets here if server and internet are on
+                            String err;
+                            if (error instanceof com.android.volley.NoConnectionError) {
+                                err = "No Internet Access";
+                                Toast.makeText(getApplicationContext(), err, Toast.LENGTH_SHORT).show();
+                            }
+                            else if (error.getClass().equals(TimeoutError.class)){
+                                Toast.makeText(getApplicationContext(),"Server is unavailable",Toast.LENGTH_SHORT).show();
+                            }
+                            else {
+                                Toast.makeText(getApplicationContext(), "Something went wrong", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }){
             @Override
@@ -134,7 +147,7 @@ public class Register extends AppCompatActivity {
                         // onSignupFailed();
                         progressDialog.dismiss();
                     }
-                }, 3000);
+                }, 2000);
     }
 
 
@@ -148,7 +161,7 @@ public class Register extends AppCompatActivity {
     }
 
     public void onSignupFailed() {
-        Toast.makeText(getBaseContext(), "Login failed", Toast.LENGTH_LONG).show();
+        Toast.makeText(getBaseContext(), "Registration failed", Toast.LENGTH_LONG).show();
 
         _signupButton.setEnabled(true);
     }

@@ -10,7 +10,6 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -51,7 +50,7 @@ public class Item_Frag extends android.app.ListFragment{
 
         //setup itemlist from server
         getItems();
-        Toast.makeText(getActivity(),"List size check: "+list.size(),Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getActivity(),"List size check: "+list.size(),Toast.LENGTH_SHORT).show();
     }
     private void getItems() {
             //Progress bar while getting items
@@ -101,7 +100,6 @@ public class Item_Frag extends android.app.ListFragment{
                         */
                             VolleyLog.d("onErrorResponse", "Error: " + error.getMessage());
                             hidePDialog();
-                            Toast.makeText(getActivity(), "Something went wrong in request_item_lst", Toast.LENGTH_SHORT).show();
                         }
                     }) {
 
@@ -114,8 +112,15 @@ public class Item_Frag extends android.app.ListFragment{
                     return headers;
                 }
             };
-            jsonArrayRequest.setRetryPolicy(new DefaultRetryPolicy(0, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-                queue.add(jsonArrayRequest);
+           jsonArrayRequest.setRetryPolicy(new DefaultRetryPolicy(DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 5, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        queue.add(jsonArrayRequest);
+        new android.os.Handler().postDelayed(
+            new Runnable() {
+                public void run() {
+                    if(pDialog!=null)
+                    pDialog.dismiss();
+                }
+            }, 2000);
     }
 
     @Override
@@ -129,6 +134,7 @@ public class Item_Frag extends android.app.ListFragment{
         Intent intent=new Intent(getActivity(),ItemDetailActivity.class);
         intent.putExtra("Item",item);
         startActivity(intent);
+
     }
 
     @Override
@@ -143,5 +149,6 @@ public class Item_Frag extends android.app.ListFragment{
             pDialog=null;
         }
     }
+    
 
 }
