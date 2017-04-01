@@ -1,4 +1,4 @@
-package com.example.acfan.project;
+package com.example.acfan.project.fragments;
 
 
 import android.app.ProgressDialog;
@@ -12,12 +12,17 @@ import android.view.View;
 import android.widget.ListView;
 
 import com.android.volley.AuthFailureError;
-import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
+import com.example.acfan.project.network.CustomJsonArrayRequest;
+import com.example.acfan.project.adapters.ItemAdapter;
+import com.example.acfan.project.R;
+import com.example.acfan.project.network.VolleySingleton;
+import com.example.acfan.project.activities.ItemDetailActivity;
+import com.example.acfan.project.models.Item;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,15 +32,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.example.acfan.project.MainActivity.DEFAULT;
+import static com.example.acfan.project.activities.MainActivity.DEFAULT;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class Item_Frag extends android.app.ListFragment{
-    public static final String ITEM_DETAIL = "com.example.acfan.project.Item Detail";
-    public static final String CART_KEY ="com.example.acfan.project.Cart Key";
+    public static final String ITEM_DETAIL = "com.example.acfan.project.models.Item Detail";
+    public static final String CART_KEY ="com.example.acfan.project.models.Cart Key";
     private ArrayList<Item> list;
     private ItemAdapter itemAdapter;
     private ProgressDialog pDialog;
@@ -49,6 +54,7 @@ public class Item_Frag extends android.app.ListFragment{
         setListAdapter(itemAdapter);
 
         //setup itemlist from server
+        VolleyLog.d("calling itemlist","itemlist called");
         getItems();
         //Toast.makeText(getActivity(),"List size check: "+list.size(),Toast.LENGTH_SHORT).show();
     }
@@ -112,7 +118,7 @@ public class Item_Frag extends android.app.ListFragment{
                     return headers;
                 }
             };
-           jsonArrayRequest.setRetryPolicy(new DefaultRetryPolicy(DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 5, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+           //jsonArrayRequest.setRetryPolicy(new DefaultRetryPolicy(DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 5, DefaultRetryPolicy.DEFAULT_MAX_RETRIES, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         queue.add(jsonArrayRequest);
         new android.os.Handler().postDelayed(
             new Runnable() {
@@ -134,6 +140,7 @@ public class Item_Frag extends android.app.ListFragment{
         Intent intent=new Intent(getActivity(),ItemDetailActivity.class);
         intent.putExtra("Item",item);
         startActivity(intent);
+        getActivity().finish();
 
     }
 

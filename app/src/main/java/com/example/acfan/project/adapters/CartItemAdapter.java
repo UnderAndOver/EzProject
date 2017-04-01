@@ -1,4 +1,4 @@
-package com.example.acfan.project;
+package com.example.acfan.project.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,6 +9,10 @@ import android.widget.TextView;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
+import com.example.acfan.project.R;
+import com.example.acfan.project.network.VolleySingleton;
+import com.example.acfan.project.models.Cart;
+import com.example.acfan.project.models.Item;
 
 /**
  * Created by acfan on 11/17/2016.

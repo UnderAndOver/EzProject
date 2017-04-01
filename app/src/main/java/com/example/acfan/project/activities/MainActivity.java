@@ -1,4 +1,4 @@
-package com.example.acfan.project;
+package com.example.acfan.project.activities;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -12,7 +12,6 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
-import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -20,6 +19,9 @@ import com.android.volley.Response;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.acfan.project.R;
+import com.example.acfan.project.network.VolleySingleton;
+import com.example.acfan.project.fragments.Item_Frag;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,7 +34,6 @@ public class MainActivity extends AppCompatActivity {
     public static final String DEFAULT="N/A";
     public String url_token_login= "http://192.168.2.107:5000/tokenlogin"; //check token login
     Item_Frag item_frag;
-    boolean flag=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
             item_frag = new Item_Frag();
             FragmentManager fragmentManager = getFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.add(R.id.activity_main, item_frag, "Frag");
+            fragmentTransaction.add(R.id.list, item_frag, "Frag");
             fragmentTransaction.commit();
         }
     }
@@ -58,13 +59,8 @@ public class MainActivity extends AppCompatActivity {
             // user is new implement splash screen here
             return false;
         }
-        else if(Token_Verify().isEmpty()|| Token_Verify()==null){
+        else if(Token_Verify(token).isEmpty()){
             Toast.makeText(getApplicationContext(),"Sorry something went wrong, you will need to login again",Toast.LENGTH_SHORT).show();
-            return false;
-
-        }
-        else if(Token_Verify().equals("EXPIRED")){
-            Toast.makeText(getApplicationContext(),"Sorry but we need you to login again",Toast.LENGTH_SHORT).show();
             return false;
         }
         else
@@ -86,10 +82,9 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    public String Token_Verify(){
+    public String Token_Verify(String user_token){
         RequestQueue queue = VolleySingleton.getInstance().getRequestQueue();
-        SharedPreferences sharedPreferences=getSharedPreferences("Token", Context.MODE_PRIVATE);
-        String token = sharedPreferences.getString("token",DEFAULT);
+        String token = user_token;
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET,url_token_login,null,
 
                 new Response.Listener<JSONObject>() {
@@ -100,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
                             if(code.equals("EXPIRED")){
                                 SharedPreferences sharedPreferences = getSharedPreferences("Token", Context.MODE_PRIVATE);
                                 SharedPreferences.Editor editor = sharedPreferences.edit();
-                                editor.putString("token", code);
+                                editor.putString("token", "");
                                 editor.apply();
                             }
                         } catch (JSONException e) {
@@ -113,12 +108,11 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.v("Response", error.toString());
-                        String err = null;
+                        String err;
                         // gets here if server and internet are on
                         NetworkResponse networkResponse=error.networkResponse;
                         if (networkResponse != null && networkResponse.statusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
                             startLoginActivity();
-                            flag=true;
                             Toast.makeText(getApplicationContext(), "Sorry, but you will have to login again", Toast.LENGTH_LONG).show();
                         }
                         if (error instanceof com.android.volley.NoConnectionError) {
@@ -126,15 +120,16 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(), err, Toast.LENGTH_SHORT).show();
                         }
                         else if (error.getClass().equals(TimeoutError.class)){
-                            Toast.makeText(getApplicationContext(),"Server is unavailable",Toast.LENGTH_SHORT).show();
+                            err="Server is unavailable";
+                            Toast.makeText(getApplicationContext(),err,Toast.LENGTH_SHORT).show();
                         }
                         else {
                         SharedPreferences sharedPreferences = getSharedPreferences("Token", Context.MODE_PRIVATE);
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putString("token", "");
                         editor.apply();
-                        if(!flag)
-                        Toast.makeText(getApplicationContext(), "Something went wrong", Toast.LENGTH_SHORT).show();
+                        err = "Something went wrong";
+                        Toast.makeText(getApplicationContext(), err, Toast.LENGTH_SHORT).show();
                         }
                     }
                 }) {
@@ -148,17 +143,7 @@ public class MainActivity extends AppCompatActivity {
                 return headers;
             }
         };
-        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(20 * 1000, 0,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-        if(!flag) {
-            queue.add(jsonObjectRequest);
-            flag = true;
-        }
-        else
-            flag=false;
-        token=sharedPreferences.getString("token",DEFAULT);
-        if(token.equals("EXPIRED"))
-        sharedPreferences.edit().putString("token","").apply();
+        queue.add(jsonObjectRequest);
         return token;
     }
 }

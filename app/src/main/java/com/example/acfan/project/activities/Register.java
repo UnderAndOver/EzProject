@@ -1,4 +1,4 @@
-package com.example.acfan.project;
+package com.example.acfan.project.activities;
 
 /**
  * Created by acfan on 2/25/2017.
@@ -23,6 +23,8 @@ import com.android.volley.Response;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.acfan.project.R;
+import com.example.acfan.project.network.VolleySingleton;
 
 import org.json.JSONException;
 import org.json.JSONObject;

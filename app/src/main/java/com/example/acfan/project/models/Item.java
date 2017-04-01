@@ -1,4 +1,4 @@
-package com.example.acfan.project;
+package com.example.acfan.project.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;

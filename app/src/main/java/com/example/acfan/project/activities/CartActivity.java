@@ -1,4 +1,4 @@
-package com.example.acfan.project;
+package com.example.acfan.project.activities;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -21,6 +21,12 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.acfan.project.adapters.CartItemAdapter;
+import com.example.acfan.project.models.Item;
+import com.example.acfan.project.R;
+import com.example.acfan.project.network.VolleySingleton;
+import com.example.acfan.project.models.Cart;
+import com.example.acfan.project.utils.CartHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,7 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.example.acfan.project.MainActivity.DEFAULT;
+import static com.example.acfan.project.activities.MainActivity.DEFAULT;
 
 public class CartActivity extends AppCompatActivity {
     private static final String TAG ="CartActivity";
@@ -186,6 +192,6 @@ public class CartActivity extends AppCompatActivity {
         super.onBackPressed();
         startActivity(new Intent(this,MainActivity.class));
         finish();
-    }
+}
 }
 

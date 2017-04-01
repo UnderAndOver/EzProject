@@ -1,12 +1,14 @@
-package com.example.acfan.project;
+package com.example.acfan.project.network;
 
 import android.graphics.Bitmap;
 import android.util.LruCache;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
+import com.example.acfan.project.utils.MyApplication;
 
 /**
  * Created by acfan on 2/25/2017.
@@ -48,6 +50,9 @@ public class VolleySingleton {
     }
 
     public <T> void addToRequestQueue(Request<T> req) {
+        req.setShouldCache(true);
+        req.setRetryPolicy(new DefaultRetryPolicy(10000, DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         getRequestQueue().add(req);
     }
 

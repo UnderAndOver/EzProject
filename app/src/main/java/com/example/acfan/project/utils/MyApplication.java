@@ -1,4 +1,4 @@
-package com.example.acfan.project;
+package com.example.acfan.project.utils;
 
 import android.app.Application;
 import android.content.Context;
