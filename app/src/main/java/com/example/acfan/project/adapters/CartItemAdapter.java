@@ -1,12 +1,18 @@
-package com.example.acfan.project;
+package com.example.acfan.project.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.NetworkImageView;
+import com.example.acfan.project.R;
+import com.example.acfan.project.network.VolleySingleton;
+import com.example.acfan.project.models.Cart;
+import com.example.acfan.project.models.Item;
 
 /**
  * Created by acfan on 11/17/2016.
@@ -32,10 +38,14 @@ public class CartItemAdapter extends ArrayAdapter<Item> {
         TextView itemname=(TextView) convertView.findViewById(R.id.item_cart_name);
         TextView itemprice = (TextView) convertView.findViewById(R.id.item_cart_price);
         TextView itemquantity = (TextView) convertView.findViewById(R.id.item_cart_quantity);
-        ImageView itempicutre = (ImageView) convertView.findViewById(R.id.item_cart_picture);
+        NetworkImageView mNetworkImageView = (NetworkImageView) convertView.findViewById(R.id.item_cart_picture);
         itemname.setText(item.getName());
         itemprice.setText(String.format("$%s", item.getPrice()));
-        itempicutre.setImageResource(item.getImage());
+
+        ImageLoader mImageLoader = VolleySingleton.getInstance().getImageLoader();
+        mImageLoader.get(item.getImageurl(), ImageLoader.getImageListener(mNetworkImageView,R.drawable.android_placeholder_vector,R.drawable.android_error_vector));
+        mNetworkImageView.setImageUrl(item.getImageurl(),mImageLoader);
+
         itemquantity.setText(""+helper.getQuantity(item));
         return convertView;
     }

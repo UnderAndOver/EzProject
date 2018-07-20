@@ -1,4 +1,4 @@
-package com.example.acfan.project;
+package com.example.acfan.project.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -8,26 +8,26 @@ import android.os.Parcelable;
  */
 
 public class Item implements Parcelable {
-    private String name,description;
-    private int id,rating,image;
+    private String name,description,imageurl,id;
+    private int rating;
     private float price;
 
-    public Item(String name, int image, String description, float price){
+    public Item(String name, String imageurl, String description, float price,String id){
         this.name=name;
-        this.image=image;
+        this.imageurl=imageurl;
         this.rating=0;
         this.description=description;
-        this.id=hashCode();
+        this.id=id;
         this.price=price;
     }
 
     public Item(Parcel input){
         name=input.readString();
         description=input.readString();
-        id=input.readInt();
+        id=input.readString();
         rating=input.readInt();
-        image=input.readInt();
         price=input.readFloat();
+        imageurl=input.readString();
     }
 
     public String getName(){
@@ -36,11 +36,12 @@ public class Item implements Parcelable {
     public String getDescription(){
         return description;
     }
-    public int getId(){
+    public String getImageurl(){return imageurl;}
+    public String getId(){
         return id;
     }
-    public int getImage(){
-        return image;
+    public String getImage(){
+        return imageurl;
     }
     public int getRating(){
         return rating;
@@ -48,7 +49,6 @@ public class Item implements Parcelable {
     public float getPrice(){
         return price;
     }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -74,10 +74,10 @@ public class Item implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(name);
         dest.writeString(description);
-        dest.writeInt(id);
+        dest.writeString(id);
         dest.writeInt(rating);
-        dest.writeInt(image);
         dest.writeFloat(price);
+        dest.writeString(imageurl);
     }
 
     public static final Parcelable.Creator<Item> CREATOR

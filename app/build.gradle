@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.1"
+    buildToolsVersion '25.0.0'
     defaultConfig {
         applicationId "com.example.acfan.project"
         minSdkVersion 19
@@ -15,6 +15,18 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            applicationIdSuffix ".debug"
+        }
+
+        jnidebug {
+
+            // This copies the debuggable attribute and debug signing configurations.
+            initWith debug
+
+            applicationIdSuffix ".jnidebug"
+            jniDebuggable true
         }
     }
 }
@@ -29,4 +41,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
     compile 'com.android.support:design:25.1.0'
+    compile 'com.android.volley:volley:1.0.0'
+    compile 'com.jakewharton:butterknife:6.1.0'
+    compile 'com.squareup.picasso:picasso:2.5.2'
 }

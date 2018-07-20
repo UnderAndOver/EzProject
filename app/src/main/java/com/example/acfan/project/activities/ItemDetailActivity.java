@@ -1,4 +1,4 @@
-package com.example.acfan.project;
+package com.example.acfan.project.activities;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -6,6 +6,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+
+import com.example.acfan.project.fragments.ItemDetailFragment;
+import com.example.acfan.project.R;
 
 /**
  * Created by acfan on 10/22/2016.

@@ -1,4 +1,4 @@
-package com.example.acfan.project;
+package com.example.acfan.project.fragments;
 
 import android.app.Fragment;
 import android.content.Intent;
@@ -8,22 +8,30 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.NetworkImageView;
+import com.example.acfan.project.R;
+import com.example.acfan.project.network.VolleySingleton;
+import com.example.acfan.project.activities.CartActivity;
+import com.example.acfan.project.models.Cart;
+import com.example.acfan.project.models.Item;
+import com.example.acfan.project.utils.CartHelper;
 
 /**
  * Created by acfan on 10/22/2016.
  */
 
 public class ItemDetailFragment extends Fragment {
-    public static final String ITEM_CART ="com.example.acfan.project.Item Cart";
+    public static final String ITEM_CART ="com.example.acfan.project.models.Item Cart";
     private static final String TAG ="ItemDetailFragment";
     private int count=1;
-    public static final String ITEM_AMOUNT_EXTRA="com.example.acfan.project.Item Amount";
+    public static final String ITEM_AMOUNT_EXTRA="com.example.acfan.project.models.Item Amount";
     Intent intent;
     Item item;
     TextView name,description,price,amount;
-    ImageView picture;
+    NetworkImageView mNetworkImageView;
     View fragmentLayout;
     Button bOrder;
     public ItemDetailFragment(){
@@ -48,7 +56,7 @@ public class ItemDetailFragment extends Fragment {
         name=(TextView) fragmentLayout.findViewById(R.id.Item_Name);
         description=(TextView)fragmentLayout.findViewById(R.id.Item_description);
         price =(TextView)fragmentLayout.findViewById(R.id.Item_Price);
-        picture=(ImageView)fragmentLayout.findViewById(R.id.Item_Image);
+        mNetworkImageView=(NetworkImageView)fragmentLayout.findViewById(R.id.Item_Image);
         amount = (TextView)fragmentLayout.findViewById(R.id.counter);
         bOrder = (Button)fragmentLayout.findViewById(R.id.bOrder);
     }
@@ -57,7 +65,11 @@ public class ItemDetailFragment extends Fragment {
         name.setText(item.getName());
         description.setText(item.getDescription());
         price.setText(new StringBuilder().append("$").append(item.getPrice()).toString());
-        picture.setImageResource(item.getImage());
+
+        ImageLoader mImageLoader = VolleySingleton.getInstance().getImageLoader();
+        mImageLoader.get(item.getImageurl(), ImageLoader.getImageListener(mNetworkImageView,R.drawable.android_placeholder_vector,R.drawable.android_error_vector));
+        mNetworkImageView.setImageUrl(item.getImageurl(),mImageLoader);
+
         if(CartHelper.getCart().getItems().contains(item))
         count = CartHelper.getCart().getQuantity(item);
         else
@@ -90,6 +102,7 @@ public class ItemDetailFragment extends Fragment {
                 cart.addItem(count,item);
                 Intent intent = new Intent(getActivity(), CartActivity.class);
                 startActivity(intent);
+                getActivity().finish();
             }
         });
     }
